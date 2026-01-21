@@ -15,29 +15,30 @@ Locked UTXOは、単なるスクリプト断片ではなく、テンプレート
 本章は「一般形式（general form）」までを与え、ユースケース適用は次章でテンプレート群（deposit/release/refund）として具体化する。
 
 \subsection{UTXO ステートマシン}
-\paragraph{定義 1（UTXO と Outpoint）}
+\paragraph{Definition 1（UTXO と Outpoint）}
 Outpoint を $\mathsf{op}=(\mathsf{txid}, i)$ とし、UTXO を次で表す：
-\[
+\begin{equation}
 	u=(\mathsf{op}, v, \mathsf{lockScript}, \mathsf{data})
-\]
+\end{equation}
 ここで $v$ は額面、$\mathsf{lockScript}$ は消費条件、$\mathsf{data}$ は（本稿で導入する）テンプレート参照や状態タグ等の付随データである。
+\textbf{実装上は、$\mathsf{data}$ は script / witness / commitment / metadata に埋め込む抽象化であり、UTXO に独立の data 欄があることを仮定しない。}
 （Bitcoin Script 相当では $\mathsf{data}$ を script/commitment/metadata として埋め込む。eUTXO では datum として扱える。）
 
-\paragraph{定義 2（台帳状態）}
+\paragraph{Definition 2（台帳状態）}
 台帳状態を
-\[
+\begin{equation}
 	\Sigma := (U, \Gamma)
-\]
+\end{equation}
 とする。$U$ は未消費 UTXO の集合、$\Gamma$ はテンプレート集合（および必要な参照情報）から成る不変レジストリである（R4）。
 
-\paragraph{定義 3（トランザクション）}
+\paragraph{Definition 3（トランザクション）}
 トランザクション $tx$ を
-\[
+\begin{equation}
 	tx := (\mathsf{in}, \mathsf{out}, \mathsf{wit})
-\]
+\end{equation}
 とする。$\mathsf{in}$ は入力 outpoint 列、$\mathsf{out}$ は出力 UTXO 列、$\mathsf{wit}$ は署名等の witness である。
 
-\paragraph{定義 4（基礎検証：UTXO 妥当性）}
+\paragraph{Definition 4（基礎検証：UTXO 妥当性）}
 $tx$ が $\Sigma$ 上で基礎的に妥当であるとは、次を満たすことをいう。
 \begin{enumerate}
 	\item[(i)] 入力が $U$ の要素を参照し、二重消費がない。
@@ -45,14 +46,25 @@ $tx$ が $\Sigma$ 上で基礎的に妥当であるとは、次を満たすこ�
 	\item[(iii)] 価値保存（$\sum v_{\mathrm{in}}=\sum v_{\mathrm{out}}+\mathsf{fee}$）等のプロトコル規則を満たす。
 \end{enumerate}
 
+\paragraph{遷移規則（状態更新）}
+$tx$ が上の基礎妥当性を満たし、かつ admissible（Definition 10）であるとき、状態遷移
+\begin{equation}
+	\Sigma \xrightarrow{tx} \Sigma'
+\end{equation}
+を定義する。ここで $U_{\mathrm{in}}(tx)$ は入力が参照する UTXO の集合、$U_{\mathrm{out}}(tx)$ は出力 UTXO の集合とし、
+\begin{equation}
+	U' := (U \setminus U_{\mathrm{in}}(tx)) \cup U_{\mathrm{out}}(tx), \quad \Gamma' := \Gamma
+\end{equation}
+として $\Sigma' := (U', \Gamma')$ を得る。
+
 \subsection{スマートコントラクトの抽象定義：Lock / Predicate / Prescribed Transition}
 本稿は、スマートコントラクトを「汎用プログラム」ではなく、条件付き資産移転として抽象化する。
 
-\paragraph{定義 5（テンプレート型コントラクト）}
+\paragraph{Definition 5（テンプレート型コントラクト）}
 テンプレート型スマートコントラクトを次の 3 つ組として定義する：
-\[
+\begin{equation}
 	C := (\mathsf{Lock}, \mathsf{Pred}, \mathsf{Trans})
-\]
+\end{equation}
 \begin{itemize}
 	\item $\mathsf{Lock}$：資産を拘束する操作（どの形の UTXO を Locked 状態にするか）
 	\item $\mathsf{Pred}$：解放条件（unlock predicate）。外部裁量ではなく検証可能な述語である（R2）。
@@ -62,11 +74,11 @@ $tx$ が $\Sigma$ 上で基礎的に妥当であるとは、次を満たすこ�
 \subsection{オンチェーン対象：Template / Contract Instance / Locked UTXO}
 本稿の対象を、“状態として何が増えるか”が明確になるように、次の 3 層に整理する。
 
-\paragraph{定義 6（Template：普遍）}
+\paragraph{Definition 6（Template：普遍）}
 テンプレート $\tau \in \Gamma$ は次の構造を持つ：
-\[
+\begin{equation}
 	\tau := (\mathsf{tid}, \mathsf{ArgSchema}, \mathsf{Logic}, \mathsf{TransSpec}, \mathsf{Bound})
-\]
+\end{equation}
 \begin{itemize}
 	\item $\mathsf{tid}$：テンプレート ID（固定）
 	\item $\mathsf{ArgSchema}$：引数の型・制約
@@ -76,45 +88,55 @@ $tx$ が $\Sigma$ 上で基礎的に妥当であるとは、次を満たすこ�
 \end{itemize}
 テンプレートは \textbf{普遍（protocol-level constant）} であり、台帳状態の更新で変化しない（R3, R4）。
 
-\paragraph{定義 7（Contract Instance：インスタンス記述子）}
+\paragraph{Definition 7（Contract Instance：インスタンス記述子）}
 コントラクト・インスタンス $I$ は
-\[
+\begin{equation}
 	I := (\mathsf{cid}, \mathsf{tid}, \vec{a}, \mathsf{participants})
-\]
-で表す。$\vec{a}$ は初期化引数、$\mathsf{participants}$ は（必要なら）当事者集合（例：Buyer/Seller/Operator）である。
+\end{equation}
+で表す。$\vec{a}=(a_1,\dots,a_k)$ はテンプレートが定める初期化引数列、$\mathsf{participants}$ は（必要なら）当事者集合（例：Buyer/Seller/Operator）である。
 $\mathsf{cid}$ は決定的に導出される識別子であり、例えば
-\[
+\begin{equation}
 	\mathsf{cid} := H(\mathsf{createTxid} \parallel i \parallel \mathsf{tid} \parallel \vec{a})
-\]
+\end{equation}
 のように作れる（重要なのは同一入力から一意であること）。これにより「参照先インスタンスが曖昧」「後から差し替え」等の裁量余地を縮退する（R2, R3）。
 
-\paragraph{定義 8（Locked UTXO：型付き状態）}
+\paragraph{Definition 8（Locked UTXO：型付き状態）}
 Locked UTXO は、単なる script 断片ではなくテンプレート参照と状態タグを伴う型付き状態である、という設計選好を仕様として固定する。
 Locked UTXO を
-\[
+\begin{equation}
 	u^\star := (\mathsf{op}, v, \mathsf{lockScript}, \mathsf{cid}, \mathsf{stateTag})
-\]
-と表す。$\mathsf{stateTag}$ はテンプレートが定める有限個の状態ラベル（例：$S0, S0D, S0X$）である。
+\end{equation}
+と表す。ここで $u^\star$ の上付き $\star$ は lock 済み状態を示す記号である。
+$\mathsf{stateTag}$ はテンプレートが定める有限個の状態ラベル（例：$S0, S0D, S0X$）である。
+\textbf{実装上は、$\mathsf{stateTag}$ も script / witness / commitment / metadata に埋め込む抽象化であり、UTXO に独立の状態欄があることを仮定しない。}
 これにより「Script の中に条件を書く」から、「状態（タグ/メタ）に条件を載せ、テンプレート参照で検証する」へと、監査可能性が上限付きの表現に移る。
 
 \subsection{遷移規則：Create / Lock / Release / Finalize と Admissibility}
 本節では、Locked UTXO を生成・消費する遷移の妥当性を admissibility（許容条件）として定義する。要件は「外部裁量ではなく検証可能」＝決定的 admissibility である（R2）。
 
-\paragraph{定義 9（Contract Create / Lock）}
+\paragraph{Definition 9（Contract Create / Lock）}
 \begin{itemize}
 	\item CreateSC：$\Gamma$ 内のテンプレート $\mathsf{tid}$ と引数 $\vec{a}$ を参照し、$\mathsf{cid}$ を生成するトランザクション。
 	\item Lock：通常 UTXO $u$ を消費し、Locked UTXO $u^\star$ を出力する。出力には $(\mathsf{cid}, \mathsf{stateTag}=s_{\mathrm{init}})$ が付与される。
 \end{itemize}
 
-\paragraph{定義 10（Release / Transition）}
+\paragraph{Definition 10（Release / Transition）}
 Locked UTXO $u^\star$ を入力として消費するトランザクションを contract transition tx と呼ぶ。
-このとき、テンプレート $\tau$ が定める遷移ラベル $\ell$ に対し、次を満たすときに限り $tx$ は admissible とする。
+ここで $\ell$ はテンプレートが定める遷移ラベルである。型注釈として、
+\begin{equation}
+	\mathsf{Pred}_{\tau,\ell} : \Sigma \times \mathsf{Tx} \times \mathsf{CID} \to \{\mathsf{true}, \mathsf{false}\}
+\end{equation}
+\begin{equation}
+	\mathsf{TransSpec}_{\tau,\ell} : \Sigma \times \mathsf{CID} \to \mathcal{P}(\mathsf{Out})
+\end{equation}
+を用いる。ここで $\mathsf{Tx}$ はトランザクション集合、$\mathsf{CID}$ はコントラクト識別子集合、$\mathsf{Out}$ は出力 UTXO 列の集合である。
+このとき、次を満たすときに限り $tx$ は admissible とする。
 \begin{enumerate}
 	\item[(i)] 述語の成立：$\mathsf{Pred}_{\tau,\ell}(\Sigma, tx, \mathsf{cid}) = \mathsf{true}$
 	\item[(ii)] 出力の一致：$\mathsf{out}$ が $\mathsf{TransSpec}_{\tau,\ell}$ に一致（受益者・配分・ロック継続・次状態タグ等）
 \end{enumerate}
 
-\paragraph{定義 11（Finalize / Timeout）}
+\paragraph{Definition 11（Finalize / Timeout）}
 テンプレートは「誰でも起動可能な確定遷移」を持ち得る。たとえば、期限経過により自動的に決着する遷移（$\operatorname{after}(d), \operatorname{after}(t)$）を $\ell_{\mathrm{final}}$ として与え、上の admissibility で検証可能にする。これにより資金が永久拘束されないこと（liveness）を仕様として扱える（RQ3）。
 
 \subsection{不変条件（Invariants）と要件 R1--R4 への対応}

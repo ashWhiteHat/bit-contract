@@ -48,10 +48,10 @@ Keyword1 \sep Keyword2 \sep Keyword3
 \input{sections/08_discussion_and_limitations}
 
 \section*{Declaration of generative AI in scientific writing}
-Declaration placeholder.
+During the preparation of this work, the author used ChatGPT (OpenAI) to support language editing (improving readability and clarity) and to assist in organizing the manuscript text. After using this tool, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
 
 \section*{Declaration of Competing Interest}
-Declaration placeholder.
+Declarations of interest: none.
 
 \input{sections/09_conclusion}
 
@@ -59,6 +59,11 @@ Declaration placeholder.
 \bibliographystyle{elsarticle-num}
 \bibliography{refs}
 
+\appendix
+% Ensure appendix sections render as "Appendix A." while keeping A.1, A.2 numbering.
+\renewcommand{\thesection}{Appendix~\Alph{section}.}
+\renewcommand{\thesubsection}{\Alph{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
 \input{sections/10_appendix}
 
 \end{document}
