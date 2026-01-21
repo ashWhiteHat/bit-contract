@@ -1,7 +1,7 @@
 @comment{refs.bib}
 @comment{Add BibTeX entries here.}
 
-@inproceedings{Christin2013SilkRoad,
+@inproceedings{Christin2013,
   author    = {Christin, Nicolas},
   title     = {Traveling the Silk Road: A measurement analysis of a large anonymous online marketplace},
   booktitle = {Proceedings of the 22nd International Conference on World Wide Web (WWW '13)},
@@ -11,7 +11,7 @@
   doi       = {10.1145/2488388.2488408}
 }
 
-@inproceedings{Soska2015Longitudinal,
+@inproceedings{Soska2015,
   author    = {Soska, Kyle and Christin, Nicolas},
   title     = {Measuring the Longitudinal Evolution of the Online Anonymous Marketplace Ecosystem},
   booktitle = {24th USENIX Security Symposium (USENIX Security 15)},
@@ -20,7 +20,7 @@
   publisher = {USENIX Association}
 }
 
-@article{Tzanetakis2016Transparency,
+@article{Tzanetakis2016,
   author  = {Tzanetakis, Meropi and Kamphausen, Gunter and Werse, Bernd and von Laufenberg, Rasmus},
   title   = {The transparency paradox: Building trust, resolving disputes and optimising logistics on conventional and online drugs markets},
   journal = {International Journal of Drug Policy},
@@ -30,7 +30,7 @@
   doi     = {10.1016/j.drugpo.2015.12.010}
 }
 
-@article{Spagnoletti2022Online,
+@article{Spagnoletti2022,
   author  = {Spagnoletti, Paolo and Ceci, Francesco and Bygstad, Bendik},
   title   = {Online Black-Markets: An Investigation of a Digital Infrastructure in the Dark},
   journal = {Information Systems Frontiers},
@@ -39,4 +39,186 @@
   pages   = {1811--1826},
   year    = {2022},
   doi     = {10.1007/s10796-021-10187-9}
+}
+
+
+@misc{Nakamoto2008,
+  author       = {Nakamoto, Satoshi},
+  title        = {Bitcoin: A Peer-to-Peer Electronic Cash System},
+  year         = {2008},
+  howpublished = {White paper},
+  url          = {https://bitcoin.org/bitcoin.pdf},
+  urldate      = {2026-01-21}
+}
+
+@techreport{Okupski2016,
+  author       = {Okupski, Krzysztof},
+  title        = {Bitcoin Developer Reference},
+  institution  = {Technische Universiteit Eindhoven},
+  year         = {2016},
+  type         = {Working Paper},
+  note         = {Last changes: 30 July 2016},
+  url          = {https://www.lopp.net/pdf/Bitcoin_Developer_Reference.pdf},
+  urldate      = {2026-01-21}
+}
+
+@misc{BitcoinWiki2025,
+  author       = {{Bitcoin Wiki}},
+  title        = {Script},
+  year         = {2025},
+  howpublished = {Bitcoin Wiki},
+  url          = {https://en.bitcoin.it/wiki/Script},
+  urldate      = {2026-01-21},
+  note         = {States Script is stack-based and intentionally not Turing-complete (no loops)}
+}
+
+
+@misc{Wood2025,
+  author       = {Wood, Gavin},
+  title        = {Ethereum: A Secure Decentralised Generalised Transaction Ledger (Yellow Paper)},
+  year         = {2025},
+  howpublished = {Specification (living document)},
+  url          = {https://ethereum.github.io/yellowpaper/paper.pdf},
+  urldate      = {2026-01-21}
+}
+
+@misc{Buterin2014,
+  author       = {Buterin, Vitalik},
+  title        = {Ethereum Whitepaper: A Next-Generation Smart Contract and Decentralized Application Platform},
+  year         = {2014},
+  howpublished = {White paper},
+  url          = {https://ethereum.org/en/whitepaper/},
+  urldate      = {2026-01-21},
+  note         = {Hosted by ethereum.org (page updated over time)}
+}
+
+@misc{Polkadot2026,
+  author       = {{Polkadot Developer Docs}},
+  title        = {Add Smart Contract Functionality},
+  year         = {2026},
+  howpublished = {Online documentation},
+  url          = {https://docs.polkadot.com/parachains/customize-runtime/add-smart-contract-functionality/},
+  urldate      = {2026-01-21},
+  note         = {Mentions pallet-contracts (Wasm), pallet-revive (PVM) and EVM compatibility approaches}
+}
+
+@misc{Ink2025a,
+  author       = {{ink!}},
+  title        = {How it Works -- Substrate},
+  year         = {2025},
+  howpublished = {Online documentation (ink! v5 docs)},
+  url          = {https://use.ink/docs/v5/how-it-works/},
+  urldate      = {2026-01-21},
+  note         = {Describes pallet-contracts as a Wasm execution environment}
+}
+
+@misc{Polkadot2025,
+  author       = {{Polkadot Wiki}},
+  title        = {Smart Contracts on Polkadot},
+  year         = {2025},
+  howpublished = {Online documentation},
+  url          = {https://wiki.polkadot.com/learn/learn-smart-contracts/},
+  urldate      = {2026-01-21},
+  note         = {Describes pallet-revive as an upgraded version of pallet-contracts}
+}
+
+@misc{Ink2025c,
+  author       = {{ink! Documentation}},
+  title        = {Polkadot SDK and ink!},
+  year         = {2025},
+  howpublished = {Online documentation},
+  url          = {https://use.ink/docs/v6/background/polkadot-sdk/},
+  urldate      = {2026-01-21}
+}
+
+@misc{Ink2025b,
+  author       = {{ink! Documentation}},
+  title        = {Why RISC-V and PolkaVM for Smart Contracts?},
+  year         = {2025},
+  howpublished = {Online documentation (ink! v6 docs)},
+  url          = {https://use.ink/docs/v6/background/why-riscv-and-polkavm-for-smart-contracts/},
+  urldate      = {2026-01-21},
+  note         = {Discusses shift from Wasm (pallet-contracts) to RISC-V (pallet-revive/PolkaVM)}
+}
+
+@techreport{Teixeira2018,
+  author       = {Teixeira, Diego and Nehab, Diego F. Aranha?},
+  title        = {The Core of Cartesi},
+  year         = {2018},
+  type         = {Technical report / whitepaper},
+  note         = {Version 1.01},
+  url          = {https://w3.impa.br/~diego/projects/cartesi/TexNeh18.pdf},
+  urldate      = {2026-01-21}
+}
+
+@inproceedings{Chakravarty2020,
+  author       = {Chakravarty, Manuel M. T. and Chapman, James and MacKenzie, Kenneth and Melkonian, Orestis and Peyton Jones, Michael and Wadler, Philip},
+  title        = {The Extended UTXO Model},
+  booktitle    = {Financial Cryptography and Data Security. FC 2020 International Workshops},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {12063},
+  pages        = {525--539},
+  publisher    = {Springer},
+  address      = {Cham},
+  year         = {2020},
+  doi          = {10.1007/978-3-030-54455-3_37},
+  url          = {https://link.springer.com/chapter/10.1007/978-3-030-54455-3_37},
+  urldate      = {2026-01-21}
+}
+
+@misc{Cardano2025a,
+  author       = {{Cardano Developer Portal}},
+  title        = {Extended UTXO Model},
+  year         = {2025},
+  howpublished = {Online documentation},
+  url          = {https://developers.cardano.org/docs/learn/core-concepts/eutxo/},
+  urldate      = {2026-01-21},
+  note         = {Includes discussion of deterministic validation in UTXO/eUTXO}
+}
+
+@misc{Cardano2025b,
+  author       = {{Cardano Documentation}},
+  title        = {Transaction costs and determinism},
+  year         = {2025},
+  howpublished = {Online documentation},
+  url          = {https://docs.cardano.org/about-cardano/learn/transaction-costs-determinism},
+  urldate      = {2026-01-21}
+}
+
+@misc{IOG2021a,
+  author       = {{Input Output Global (IOG)}},
+  title        = {No-surprises transaction validation on Cardano},
+  year         = {2021},
+  howpublished = {Blog post},
+  url          = {https://www.iog.io/news/no-surprises-transaction-validation-on-cardano},
+  urldate      = {2026-01-21}
+}
+
+@misc{IOG2021b,
+  author       = {{Input Output Global (IOG)}},
+  title        = {No-surprises transaction validation: part 2},
+  year         = {2021},
+  howpublished = {Blog post},
+  url          = {https://www.iog.io/news/no-surprises-transaction-validation-part-2},
+  urldate      = {2026-01-21}
+}
+
+@misc{Szabo1996,
+  author       = {Szabo, Nick},
+  title        = {Smart Contracts: Building Blocks for Digital Markets},
+  year         = {1996},
+  howpublished = {Online essay},
+  url          = {https://szabo.best.vwh.net/smart_contracts_2.html},
+  urldate      = {2026-01-21},
+  note         = {Copyright (c) 1996}
+}
+
+@article{Szabo1997,
+  author  = {Szabo, Nick},
+  title   = {Formalizing and Securing Relationships on Public Networks},
+  journal = {First Monday},
+  year    = {1997},
+  volume  = {2},
+  number  = {9},
+  doi     = {10.5210/fm.v2i9.548}
 }

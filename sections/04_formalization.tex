@@ -1,11 +1,4 @@
 \section{Formalization}
-本章では、UTXO集合を状態としトランザクションを遷移とするステートマシンとしてBitcoinを再定式化する。
-その上で、スマートコントラクトを「資産の拘束（$\mathrm{lock}$）」「解放条件（$\text{unlock predicate}$）」「条件成立時に許される出力（$\text{prescribed transition/template}$）」として抽象化し、UTXOに新たな状態型としてLocked UTXOを導入する。
-Locked UTXOは、単なるスクリプト断片ではなく、テンプレート参照と決定的な検証規則を伴う型付き状態として扱われ、これにより監査可能性が上限付きの契約表現を可能にする。
-次章では、この形式化を具体的なテンプレート（$\mathrm{deposit}/\mathrm{release}/\mathrm{refund}$）へ具体化し、必要な変数・パラメータ・検証規則を与える。
-
-\subsection{目的とスコープ}
-
 本章の目的は、Bitcoin を UTXO 集合を状態、トランザクションを遷移とするステートマシンとして再定式化し、その上でスマートコントラクトを (1) 資産の拘束（lock）(2) 解放条件（unlock predicate）(3) 条件成立時に許される出力（prescribed transition / template）として形式的に定義することである。
 
 本稿は 汎用 VM による任意計算と mutable global state（共有可変ストレージ）を採用しない。
@@ -77,14 +70,13 @@ $tx$ が上の基礎妥当性を満たし、かつ admissible（Definition 10）
 \paragraph{Definition 6（Template：普遍）}
 テンプレート $\tau \in \Gamma$ は次の構造を持つ：
 \begin{equation}
-	\tau := (\mathsf{tid}, \mathsf{ArgSchema}, \mathsf{Logic}, \mathsf{TransSpec}, \mathsf{Bound})
+	\tau := (\mathsf{tid}, \mathsf{ArgSchema}, \mathsf{Logic}, \mathsf{TransSpec})
 \end{equation}
 \begin{itemize}
 	\item $\mathsf{tid}$：テンプレート ID（固定）
 	\item $\mathsf{ArgSchema}$：引数の型・制約
 	\item $\mathsf{Logic}$：Computational Law（例：Stipula）等で記述された検証ロジック
 	\item $\mathsf{TransSpec}$：許される状態遷移ラベルと、それぞれの出力仕様
-	\item $\mathsf{Bound}$：監査上限を規定する境界（コードサイズ、分岐数、参照数など）
 \end{itemize}
 テンプレートは \textbf{普遍（protocol-level constant）} であり、台帳状態の更新で変化しない（R3, R4）。
 
@@ -164,7 +156,7 @@ Operator が単独で資金を不正流用できる遷移 $F$ が admissible に
 \begin{itemize}
 	\item R1：$F$ を admissibility から排除（Authority Safety）
 	\item R2：$\mathsf{Pred}$ と $\mathsf{TransSpec}$ による決定的 admissibility
-	\item R3：Template + $\mathsf{Bound}$ による監査上限
+	\item R3：テンプレートによる監査上限
 	\item R4：状態は基本的に UTXO（局所状態）。共有は $\Gamma$（不変）に限定
 \end{itemize}
 

@@ -66,7 +66,7 @@ D1. Reputation / Feedback（既存解）
 D2. Multi-signature escrow（既存解）
 
 単独管理を避けるため、マルチシグ等で資金アクセスを分散する試みがある。
-これはOperator単独による$F$（Misappropriation）を抑止し得る一方で、鍵管理・参加者の利害・手続の透明性といった運用・ガバナンス上の政治変数が残存する。
+これはOperator単独による$F$（Misappropriation）を抑止し得る一方で、鍵管理・参加者の利害・手続の透明性といった運用・ガバナンスが残存する。
 したがって、緩和策は「単独持ち逃げの難化」には寄与しても、監査可能性や手続の決定性を上限付きで保証する枠組みにはなりにくい。
 
 \subsection{Issues}
@@ -74,7 +74,7 @@ D2. Multi-signature escrow（既存解）
 既存のVMベース方式では「書ける/書けない」以前に、次の課題が残り得る。
 
 監査負荷が上限化できない：任意計算はコード規模と依存が膨張しやすく、利用者が取引意味を点検できない
-アップグレードや運用裁量が政治変数として残る：間接参照や更新可能設計が、実質的なトラスト依存を増大させ得る
+アップグレードや運用裁量が残る：間接参照や更新可能設計が、実質的なトラスト依存を増大させ得る
 カストディ構造を制度として縮退しにくい：資金拘束と解放条件が「実装＋運用」に跨り、単一支配の残余が残り得る
 
 対象を、資金拘束と解放条件の決定性、およびカストディ集中に起因する失敗遷移$F$の制度的排除／拘束に限定する。
@@ -95,9 +95,35 @@ R4: Local state / minimal shared state
 グローバルステートへの依存を避け、(e)UTXO等の局所状態とロック指向の資産移転で表現できること。
 
 \subsection{Research Questions}
-RQ1：VMを用いず、形式化可能なテンプレート集合として、IOM-CEにおける $\mathrm{deposit} / \mathrm{release} / \mathrm{refund}$ をどこまで決定的に表現できるか？
-RQ2：そのとき、運用裁量（鍵管理・ルール変更・ブラックボックス依存）といった政治変数を、どこまで縮退／移送できるか？
-RQ3：資金保全・権限安全・活性（デッドロックなし）を、不変条件としてどう定義し、どの範囲まで保証できるか？
+\paragraph{RQ1（決定的表現可能性）}
+VMを用いず、形式化可能なテンプレート集合として、IOM-CEにおける $\mathrm{deposit} / \mathrm{release} / \mathrm{refund}$ を決定的に表現できるか？
+
+\paragraph{命題 P1（決定的表現可能性）}
+焦点ケース（IOM-CE）の状態機械（$S0, S0D, S0X, S1, S2$）と各遷移ラベル $\ell$ について、テンプレート $\tau$ とインスタンス $\mathsf{cid}$ を固定すれば、任意の $\Sigma$ と $tx$ に対して $\mathsf{Pred}_{\tau,\ell}(\Sigma, tx, \mathsf{cid})$ の真偽が一意に定まり、真である場合に限り $\mathsf{out}(tx) \in \mathsf{TransSpec}_{\tau,\ell}(\Sigma, \mathsf{cid})$ が成立する。
+
+\paragraph{RQ2（運用裁量の縮退）}
+そのとき、運用裁量をどこまで縮退／移送できるか？
+
+\paragraph{定義（運用裁量の残余）}
+ある役割 $r$ について、「$r$ の単独署名（または単独操作）だけで到達できる資金移動遷移の集合」を $\mathrm{Disc}(r)$ と呼ぶ。
+
+\paragraph{命題 P2（Operator単独裁量の不在）}
+$\mathrm{Disc}(\mathsf{Operator})=\varnothing$。すなわち、運営 $C$ の単独署名だけで $S1/S2$ に到達する admissible な遷移は存在しない。
+
+\paragraph{命題 P2'（裁量の移送）}
+運営が関与する仲裁遷移は存在するが、それらは常に $(A \text{ or } B)$ の署名を伴うため、裁量は「運営単独」から「当事者の同意の証跡」へ移送される。
+
+\paragraph{RQ3（不変条件の保証範囲）}
+資金保全・権限安全・活性（デッドロックなし）を、不変条件としてどう定義し、どの範囲まで保証できるか？
+
+\paragraph{定理 T1（Safety）}
+任意の admissible $tx$ は価値保存と受益者制約を破らない（$\mathsf{TransSpec}$ により拘束）。
+
+\paragraph{定理 T2（Authority Safety）}
+運営 $C$ 単独の不正流用遷移 $F$ は admissible にならない。
+
+\paragraph{定理 T3（Liveness）}
+期限条件（$\operatorname{after}(d), \operatorname{after}(t)$）により、ロック状態が永久残留しない（Finalize/Timeout が誰でも起動可能）。
 
 本章で用いたIOM-CEの構成要素（Buyer/Seller/Operator、Escrow、消失・移行等）が先行研究で反復的に観察されることは、付録Aのエビデンス・マトリクスで可視化する。
 高リスク環境に関する計測研究は本稿の問題設定に経験的根拠を与えるが、本稿はそれらを設計対象としてではなく、抽象モデル化の根拠として引用する。
