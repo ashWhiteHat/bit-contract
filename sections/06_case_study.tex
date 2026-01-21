@@ -6,6 +6,9 @@ Buyerアドレス: $A$
 Sellerアドレス: $B$
 Operatorアドレス: $C$
 商品価格: $p$
+マージン率: $m$
+配送期間: $d$
+コントラクトタイムアウト: $t$（$t \ge d$）
 
 \subsection{Template State Transition}
 S0: Funded escrow（資金拘束）：Buyerが資金をエスクローとして拘束
@@ -13,6 +16,14 @@ S0D: Delivered pending（配送通知済み・検収猶予中）：Sellerが発�
 S0X: Disputed（紛争中：タイムアウトor仲裁のみ）：Buyerが発送の完了を認めず紛争
 S1: Release to Seller（支払）：資金がSellerへ解放
 S2: Refund to Buyer（返金）：資金がBuyerへ返還
+
+遷移の全体像は次のように要約できる。
+\begin{itemize}
+	\item $\mathrm{BuyerLock}$ で資金を拘束し $S0$ を開始。
+	\item $S0 \to S0D$（$\mathrm{SellerDeliver}$）、$S0D \to S1$（$\mathrm{BuyerConfirm}$ または $\operatorname{after}(d)$）。
+	\item $S0D \to S0X$（$\mathrm{BuyerDispute}$）、$S0X \to S1/S2$（仲裁）。
+	\item 取消およびタイムアウトにより $S0/S0D/S0X \to S2$ が可能。
+\end{itemize}
 
 S0: $p\,\mathrm{UTXO}_A \to p\,\mathrm{UTXO}(\text{script locked})$
 S0D: $p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0) \to p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0D)$
@@ -65,6 +76,30 @@ $\mathrm{SellerDeliver}$の後、$d$時間が経過し、$\mathrm{state}=S0D$ �
 $\mathrm{ContractTimeout}()$
 誰でも起動可能
 $t$の経過でFinal TransitionのBuyerに資金移動し、$S2$
+
+遷移ラベルごとの $\mathsf{Pred}_{\tau,\ell}$ と $\mathsf{TransSpec}_{\tau,\ell}$ を表に整理する。表中の不変条件は S=Safety, A=Authority Safety, L=Liveness を表す。取消フラグは Locked UTXO の $\mathsf{data}$ に記録される補助情報である。
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabular}{p{0.14\textwidth}p{0.08\textwidth}p{0.19\textwidth}p{0.23\textwidth}p{0.12\textwidth}p{0.12\textwidth}}
+		\toprule
+		遷移ラベル $\ell$           & 前提状態         & $\mathsf{Pred}_{\tau,\ell}$ が見る要素                            & $\mathsf{TransSpec}_{\tau,\ell}$（出力仕様）         & ブロードキャスト       & 不変条件    \\
+		\midrule
+		BuyerLock              & --           & $\mathrm{sig}(A)$, $p$                                       & $p$ を拘束し、$\mathrm{state}=S0$ の Locked UTXO を生成 & Buyer          & S       \\
+		SellerDeliver          & $S0$         & $\mathrm{sig}(B)$                                            & $\mathrm{state}=S0D$ に更新（ロック継続）                & Seller         & S, L    \\
+		BuyerConfirm           & $S0D$        & $\mathrm{sig}(A)$                                            & $p(1-m)$ を $B$、$p \cdot m$ を $C$ へ             & Buyer          & S, A, L \\
+		BuyerDispute           & $S0D$        & $\mathrm{sig}(A)$, $\operatorname{before}(d)$                & $\mathrm{state}=S0X$ に更新（ロック継続）                & Buyer          & A, L    \\
+		BuyerCancel            & $S0/S0D$     & $\mathrm{sig}(A)$                                            & 取消フラグを付与（ロック継続）                                & Buyer          & A       \\
+		SellerAcceptCancel     & $S0/S0D$     & $\mathrm{sig}(B)$, 取消フラグ                                     & $p$ を $A$ に返金（$S2$）                            & Seller         & S, A, L \\
+		OperatorMediateRelease & $S0X$        & $\mathrm{sig}(C)$ と $(\mathrm{sig}(A)$ or $\mathrm{sig}(B))$ & $p(1-m)$ を $B$、$p \cdot m$ を $C$ へ             & Operator + A/B & S, A, L \\
+		OperatorMediateRefund  & $S0X$        & $\mathrm{sig}(C)$ と $(\mathrm{sig}(A)$ or $\mathrm{sig}(B))$ & $p$ を $A$ に返金（$S2$）                            & Operator + A/B & S, A, L \\
+		ContractFinalize       & $S0D$        & $\operatorname{after}(d)$                                    & $p(1-m)$ を $B$、$p \cdot m$ を $C$ へ             & Anyone         & S, L    \\
+		ContractTimeout        & $S0/S0D/S0X$ & $\operatorname{after}(t)$                                    & $p$ を $A$ に返金（$S2$）                            & Anyone         & S, L    \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 \subsection{Property}
 Safety（運営の持ち逃げ抑止）
