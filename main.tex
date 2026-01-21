@@ -7,6 +7,10 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 \usepackage{bookmark}
+% --- Japanese support (pdfLaTeX) ---
+\usepackage{CJKutf8}
+\AtBeginDocument{\begin{CJK}{UTF8}{min}}
+\AtEndDocument{\end{CJK}}
 
 % --- Reference style: numeric [1], [2] ---
 \biboptions{numbers,sort&compress}

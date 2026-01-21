@@ -1,6 +1,76 @@
 \section{Case Study: Escrow Misappropriation Resistance}
+
 \subsection{Variables}
+Buyerアドレス: $A$
+Sellerアドレス: $B$
+Operatorアドレス: $C$
+商品価格: $p$
+
 \subsection{Template State Transition}
+S0: Funded escrow（資金拘束）：Buyerが資金をエスクローとして拘束
+S0D: Delivered pending（配送通知済み・検収猶予中）：Sellerが発送の完了を通知
+S0X: Disputed（紛争中：タイムアウトor仲裁のみ）：Buyerが発送の完了を認めず紛争
+S1: Release to Seller（支払）：資金がSellerへ解放
+S2: Refund to Buyer（返金）：資金がBuyerへ返還
+
+S0: $p\,\mathrm{UTXO}_A \to p\,\mathrm{UTXO}(\text{script locked})$
+S0D: $p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0) \to p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0D)$
+S0X: $p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0D) \to p\,\mathrm{UTXO}(\text{script locked}, \mathrm{state}=S0X)$
+S1: $p\,\mathrm{UTXO}(\text{script locked}) \to p(1 - m)\,\mathrm{UTXO}_B \text{ and } p \cdot m\,\mathrm{UTXO}_C$
+S2: $p\,\mathrm{UTXO}(\text{script locked}) \to p\,\mathrm{UTXO}_A$
+
 \subsection{Template Constructor Arguments}
+マージン率: $m$
+配送期間：$d$
+コントラクトタイムアウト: $t$
+
 \subsection{Template Constructor Arguments}
+$\mathrm{Constructor}(m, d, t)$
+Operatorが変数の初期化とContract Create Transactionの送信を行う
+$d$：SellerConfirm後の“検収猶予”
+$t$：全体の最終期限（$t \ge d$ を仮定）
+
+$\mathrm{BuyerLock}(\mathrm{sig}(A), B, p)$
+Buyerが資産をLockし、$S0$が開始
+
+$\mathrm{SellerDeliver}(\mathrm{sig}(B))$
+$S0$からSellerの署名でDeliveredのフラグが立ち$S0D$に移行
+$\mathrm{delivered} := \mathrm{true}$ をオンチェーンで記録し、検収猶予 $d$ のカウントを開始する
+
+$\mathrm{BuyerConfirm}(\mathrm{sig}(A))$
+Buyerの署名で$S0D \to S1$
+
+$\mathrm{BuyerDispute}(\mathrm{sig}(A))$
+$\operatorname{before}(d)$ のみ有効
+Buyerの署名で異議申し立てで$S0D \to S0X$
+
+$\mathrm{BuyerCancel}(\mathrm{sig}(A))$
+$S0$または$S0D$からのみ
+Buyerの署名でSellerのキャンセル待ち
+
+$\mathrm{SellerAcceptCancel}(\mathrm{sig}(B))$
+$S0$または$S0D$からBuyerCancel後、Sellerの署名で$S2$に移行
+
+$\mathrm{OperatorMediateRelease}(\mathrm{sig}(C) + (\mathrm{sig}(A) \text{ or } \mathrm{sig}(B)))$
+Operator仲裁で$S1$の状態に移行
+
+$\mathrm{OperatorMediateRefund}(\mathrm{sig}(C) + (\mathrm{sig}(A) \text{ or } \mathrm{sig}(B)))$
+Operator仲裁で$S2$の状態に移行
+
+$\mathrm{ContractFinalize}()$
+誰でも起動可能
+$\mathrm{SellerDeliver}$の後、$d$時間が経過し、$\mathrm{state}=S0D$ のままなら$S0D \to S1$
+
+$\mathrm{ContractTimeout}()$
+誰でも起動可能
+$t$の経過でFinal TransitionのBuyerに資金移動し、$S2$
+
 \subsection{Property}
+Safety（運営の持ち逃げ抑止）
+$C$は単独で$S1/S2$を実行できず、資金移動には $(C + (A \text{ or } B))$ が必要（または自動遷移）。
+⇒ $C$単独のmisappropriation（$F$）を制度的に排除。
+
+Liveness（決着性）
+$S0D$は$\mathrm{BuyerConfirm}$か$\operatorname{after}(d)$の$\mathrm{Finalize}$で$S1$へ、
+$S0X$は仲裁（$C + (A \text{ or } B)$）か、最終的に$\operatorname{after}(t)$の$\mathrm{Timeout}$で$S2$へ。
+⇒ 資金が永久拘束されない。

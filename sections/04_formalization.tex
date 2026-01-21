@@ -1,1 +1,5 @@
 \section{Formalization}
+本章では、UTXO集合を状態としトランザクションを遷移とするステートマシンとしてBitcoinを再定式化する。
+その上で、スマートコントラクトを「資産の拘束（$\mathrm{lock}$）」「解放条件（$\text{unlock predicate}$）」「条件成立時に許される出力（$\text{prescribed transition/template}$）」として抽象化し、UTXOに新たな状態型としてLocked UTXOを導入する。
+Locked UTXOは、単なるスクリプト断片ではなく、テンプレート参照と決定的な検証規則を伴う型付き状態として扱われ、これにより監査可能性が上限付きの契約表現を可能にする。
+次章では、この形式化を具体的なテンプレート（$\mathrm{deposit}/\mathrm{release}/\mathrm{refund}$）へ具体化し、必要な変数・パラメータ・検証規則を与える。
