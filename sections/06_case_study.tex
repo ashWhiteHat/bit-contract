@@ -54,16 +54,41 @@ $\mathsf{addr}_C$ が $\mathsf{InitParams}$ の設定と CreateContract の送�
 上記の State は以下のように遷移する（括弧内に起動者を示す）。
 \begin{itemize}
 	\item $\mathrm{BuyerLock}$ で資金を拘束し $S0$ を開始（起動者：$\mathsf{addr}_A$）。
-	\item $S0 \to S0D$（$\mathrm{SellerDeliver}$、起動者：$\mathsf{addr}_B$）、$S0/S0D \to S1$（$\mathrm{BuyerConfirm}$、起動者：$\mathsf{addr}_A$、または $\operatorname{after}(d)$ による $\mathrm{FinalizeContract}$、起動者：Anyone）。
+	\item $S0 \to S0D$（$\mathrm{SellerDeliver}$、起動者：$\mathsf{addr}_B$）。
+	\item $S0/S0D \to S1$（$\mathrm{BuyerConfirm}$、起動者：$\mathsf{addr}_A$）。
+	\item $S0/S0D \to S1$（$\mathrm{FinalizeContract}$、$\operatorname{after}(d)$、起動者：Anyone）。
 	\item $S0D \to S0X$（$\mathrm{BuyerDispute}$、起動者：$\mathsf{addr}_A$）、$S0X \to S1/S2$（$\mathrm{OperatorMediateRelease}/\mathrm{OperatorMediateRefund}$、起動者：$\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$）。
 	\item $S0/S0D \to S0C$（$\mathrm{BuyerCancel}$、起動者：$\mathsf{addr}_A$）、$S0C \to S2$（$\mathrm{SellerAcceptCancel}$、起動者：$\mathsf{addr}_B$）。
-	\item タイムアウトにより $S0/S0D/S0X/S0C \to S2$ が可能（$\mathrm{ContractTimeout}$、起動者：Anyone）。
+	\item タイムアウトにより $S0/S0D/S0X/S0C \to S2$ が可能（$\mathrm{ContractTimeout}$、$\mathsf{timeout\_condition}(\mathsf{stateTag})=\mathsf{true}$、起動者：Anyone）。
 \end{itemize}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabular}{p{0.18\textwidth}p{0.14\textwidth}p{0.13\textwidth}p{0.17\textwidth}p{0.08\textwidth}p{0.20\textwidth}}
+		\toprule
+		遷移                                & 前提                                                                               & 起動者                                                   & 認証/条件                                          & 次状態   & 効果                                                                           \\
+		\midrule
+		$\mathrm{BuyerLock}$              & 初期（未ロック）                                                                         & $\mathsf{addr}_A$                                     & $\sigma_A$                                     & $S0$  & LockUtxo $p$（拘束開始）                                                           \\
+		$\mathrm{SellerDeliver}$          & $S0$                                                                             & $\mathsf{addr}_B$                                     & $\sigma_B$                                     & $S0D$ & $\mathsf{stateTag}=S0D$ に更新（ロック継続）                                           \\
+		$\mathrm{BuyerConfirm}$           & $S0/S0D$                                                                         & $\mathsf{addr}_A$                                     & $\sigma_A$                                     & $S1$  & $p(1-m-b)\to\mathsf{addr}_B$, $pm\to\mathsf{addr}_C$, $pb\to\mathsf{addr}_A$ \\
+		$\mathrm{FinalizeContract}$       & $S0/S0D$, $\operatorname{after}(d)$                                              & Anyone                                                & --                                             & $S1$  & $p(1-m-b)\to\mathsf{addr}_B$, $pm\to\mathsf{addr}_C$, $pb\to X$              \\
+		$\mathrm{BuyerDispute}$           & $S0D$                                                                            & $\mathsf{addr}_A$                                     & $\sigma_A$                                     & $S0X$ & $\mathsf{stateTag}=S0X$ に更新（ロック継続）                                           \\
+		$\mathrm{OperatorMediateRelease}$ & $S0X$                                                                            & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$ & $S1$  & $p(1-m)\to\mathsf{addr}_B$, $pm\to\mathsf{addr}_C$                           \\
+		$\mathrm{OperatorMediateRefund}$  & $S0X$                                                                            & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$ & $S2$  & $p\to\mathsf{addr}_A$                                                        \\
+		$\mathrm{BuyerCancel}$            & $S0/S0D$                                                                         & $\mathsf{addr}_A$                                     & $\sigma_A$                                     & $S0C$ & $\mathsf{stateTag}=S0C$ に更新（ロック継続）                                           \\
+		$\mathrm{SellerAcceptCancel}$     & $S0C$                                                                            & $\mathsf{addr}_B$                                     & $\sigma_B$                                     & $S2$  & $p\to\mathsf{addr}_A$                                                        \\
+		$\mathrm{ContractTimeout}$        & $S0/S0D/S0X/S0C$, $\mathsf{timeout\_condition}(\mathsf{stateTag})=\mathsf{true}$ & Anyone                                                & --                                             & $S2$  & $p\to\mathsf{addr}_A$                                                        \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 \begin{center}
 	\small
 	\begin{tabular}{l}
-		$\mathsf{addr}_A \rightarrow$ Escrow: LockUtxo $p$, state $S0$                                                                      \\
+		$\mathsf{addr}_A \rightarrow$ Escrow: LockUtxo $p$; $\mathrm{BuyerLock}$, state $S0$                                                \\
 		$\mathsf{addr}_B \rightarrow$ Escrow: $\mathrm{SellerDeliver}$, state $S0D$                                                         \\
 		$\mathsf{addr}_A \rightarrow$ Escrow: $\mathrm{BuyerConfirm}$, state $S1$                                                           \\
 		$\mathsf{addr}_A \rightarrow$ Escrow: $\mathrm{BuyerDispute}$, state $S0X$                                                          \\
@@ -73,13 +98,13 @@ $\mathsf{addr}_C$ が $\mathsf{InitParams}$ の設定と CreateContract の送�
 		$\mathsf{addr}_C + (\mathsf{addr}_A \text{ or } \mathsf{addr}_B) \rightarrow$ Escrow: $\mathrm{OperatorMediateRefund}$, state $S2$  \\
 		Anyone $\rightarrow$ Escrow: $\mathrm{FinalizeContract}$, state $S1$                                                                \\
 		Anyone $\rightarrow$ Escrow: $\mathrm{ContractTimeout}$, state $S2$                                                                 \\
-		Escrow $\rightarrow$ $\mathsf{addr}_B$: $p(1-m-b)$ (BuyerConfirm/Finalize)                                                          \\
-		Escrow $\rightarrow$ $\mathsf{addr}_C$: $p m$ (BuyerConfirm/Finalize)                                                               \\
-		Escrow $\rightarrow$ $\mathsf{addr}_A$: $p b$ (BuyerConfirm)                                                                        \\
-		Escrow $\rightarrow$ $X$: $p b$ (Finalize)                                                                                          \\
-		Escrow $\rightarrow$ $\mathsf{addr}_B$: $p(1-m)$ (OpRel)                                                                            \\
-		Escrow $\rightarrow$ $\mathsf{addr}_C$: $p m$ (OpRel)                                                                               \\
-		Escrow $\rightarrow$ $\mathsf{addr}_A$: $p$ (OpRef/Timeout/SellerAcceptCancel)
+		Escrow $\rightarrow$ $\mathsf{addr}_B$: $p(1-m-b)$ (BuyerConfirm/FinalizeContract)                                                  \\
+		Escrow $\rightarrow$ $\mathsf{addr}_C$: $pm$ (BuyerConfirm/FinalizeContract)                                                        \\
+		Escrow $\rightarrow$ $\mathsf{addr}_A$: $pb$ (BuyerConfirm)                                                                         \\
+		Escrow $\rightarrow$ $X$: $pb$ (FinalizeContract)                                                                                   \\
+		Escrow $\rightarrow$ $\mathsf{addr}_B$: $p(1-m)$ (OperatorMediateRelease)                                                           \\
+		Escrow $\rightarrow$ $\mathsf{addr}_C$: $pm$ (OperatorMediateRelease)                                                               \\
+		Escrow $\rightarrow$ $\mathsf{addr}_A$: $p$ (OperatorMediateRefund/ContractTimeout/SellerAcceptCancel)
 	\end{tabular}
 \end{center}
 
@@ -89,7 +114,7 @@ Template Logics（$\mathsf{LogicSet}$）は遷移ラベルと対応する検証�
 LogicIndex は以下の番号に対応し、1 から順に付与する。
 \begin{enumerate}
 	\item $\mathrm{SellerDeliver}$：引数は $\sigma_B$、modifier は $S0$、validation は $\mathsf{addr}_B$ の署名検証、post\_state は $S0D$。
-	\item $\mathrm{BuyerConfirm}$：引数は $\sigma_A$、modifier は $S0$ または $S0D$、validation は $\mathsf{addr}_A$ の署名検証、post\_state は $S1$。Finalize と同様の遷移で、bounty は $\mathsf{addr}_A$ に帰属する。
+	\item $\mathrm{BuyerConfirm}$：引数は $\sigma_A$、modifier は $S0$ または $S0D$、validation は $\mathsf{addr}_A$ の署名検証、post\_state は $S1$。FinalizeContract と同様の遷移で、bounty は $\mathsf{addr}_A$ に帰属する。
 	\item $\mathrm{BuyerDispute}$：引数は $\sigma_A$、modifier は $S0D$、validation は $\mathsf{addr}_A$ の署名検証、post\_state は $S0X$。
 	\item $\mathrm{BuyerCancel}$：引数は $\sigma_A$、modifier は $S0$ または $S0D$、validation は $\mathsf{addr}_A$ の署名検証、post\_state は $S0C$。
 	\item $\mathrm{SellerAcceptCancel}$：引数は $\sigma_B$、modifier は $S0C$、validation は $\mathsf{addr}_B$ の署名検証、post\_state は $S2$。
@@ -105,18 +130,18 @@ LogicIndex は以下の番号に対応し、1 から順に付与する。
 	\renewcommand{\arraystretch}{1.15}
 	\begin{tabular}{p{0.14\textwidth}p{0.08\textwidth}p{0.19\textwidth}p{0.23\textwidth}p{0.12\textwidth}p{0.12\textwidth}}
 		\toprule
-		遷移ラベル $\ell$                      & 前提状態             & $\mathsf{Pred}_{\tau,\ell}$ が見る要素              & $\mathsf{TransSpec}_{\tau,\ell}$：出力仕様                                                          & ブロードキャスト                                              & 不変条件    \\
+		遷移ラベル $\ell$                      & 前提状態             & $\mathsf{Pred}_{\tau,\ell}$ が見る要素                & $\mathsf{TransSpec}_{\tau,\ell}$：出力仕様                                                          & ブロードキャスト                                              & 不変条件    \\
 		\midrule
-		$\mathrm{BuyerLock}$              & --               & $\sigma_A$, $p$                                & $p$ を拘束し、$\mathrm{UTXO}^{\star}(\mathsf{c}_{id}, \mathsf{stateTag}=S0)$ を生成                    & $\mathsf{addr}_A$                                     & S       \\
-		$\mathrm{SellerDeliver}$          & $S0$             & $\sigma_B$                                     & $\mathsf{stateTag}=S0D$ に更新（ロック継続）                                                             & $\mathsf{addr}_B$                                     & S, L    \\
-		$\mathrm{BuyerConfirm}$           & $S0/S0D$         & $\sigma_A$                                     & $p(1-m-b)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$、$p\cdot b$ を $\mathsf{addr}_A$ へ & $\mathsf{addr}_A$                                     & S, A, L \\
-		$\mathrm{BuyerDispute}$           & $S0D$            & $\sigma_A$, $\operatorname{before}(d)$         & $\mathsf{stateTag}=S0X$ に更新（ロック継続）                                                             & $\mathsf{addr}_A$                                     & A, L    \\
-		$\mathrm{BuyerCancel}$            & $S0/S0D$         & $\sigma_A$                                     & $\mathsf{stateTag}=S0C$ に更新（ロック継続）                                                             & $\mathsf{addr}_A$                                     & A       \\
-		$\mathrm{SellerAcceptCancel}$     & $S0C$            & $\sigma_B$                                     & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & $\mathsf{addr}_B$                                     & S, A, L \\
-		$\mathrm{OperatorMediateRelease}$ & $S0X$            & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$ & $p(1-m)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$ へ                                  & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & S, A, L \\
-		$\mathrm{OperatorMediateRefund}$  & $S0X$            & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$ & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & S, A, L \\
-		$\mathrm{FinalizeContract}$       & $S0D$            & $\operatorname{after}(d)$, 受取先 $X$             & $p(1-m-b)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$、$p\cdot b$ を $X$ へ               & Anyone                                                & S, L    \\
-		$\mathrm{ContractTimeout}$        & $S0/S0D/S0X/S0C$ & $\operatorname{after}(t)$                      & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & Anyone                                                & S, L    \\
+		$\mathrm{BuyerLock}$              & --               & $\sigma_A$, $p$                                  & $p$ を拘束し、$\mathrm{UTXO}^{\star}(\mathsf{c}_{id}, \mathsf{stateTag}=S0)$ を生成                    & $\mathsf{addr}_A$                                     & S       \\
+		$\mathrm{SellerDeliver}$          & $S0$             & $\sigma_B$                                       & $\mathsf{stateTag}=S0D$ に更新（ロック継続）                                                             & $\mathsf{addr}_B$                                     & S, L    \\
+		$\mathrm{BuyerConfirm}$           & $S0/S0D$         & $\sigma_A$                                       & $p(1-m-b)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$、$p\cdot b$ を $\mathsf{addr}_A$ へ & $\mathsf{addr}_A$                                     & S, A, L \\
+		$\mathrm{BuyerDispute}$           & $S0D$            & $\sigma_A$                                       & $\mathsf{stateTag}=S0X$ に更新（ロック継続）                                                             & $\mathsf{addr}_A$                                     & A, L    \\
+		$\mathrm{BuyerCancel}$            & $S0/S0D$         & $\sigma_A$                                       & $\mathsf{stateTag}=S0C$ に更新（ロック継続）                                                             & $\mathsf{addr}_A$                                     & A       \\
+		$\mathrm{SellerAcceptCancel}$     & $S0C$            & $\sigma_B$                                       & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & $\mathsf{addr}_B$                                     & S, A, L \\
+		$\mathrm{OperatorMediateRelease}$ & $S0X$            & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$   & $p(1-m)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$ へ                                  & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & S, A, L \\
+		$\mathrm{OperatorMediateRefund}$  & $S0X$            & $\sigma_C$ と $(\sigma_A \text{ or } \sigma_B)$   & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & $\mathsf{addr}_C + (\mathsf{addr}_A/\mathsf{addr}_B)$ & S, A, L \\
+		$\mathrm{FinalizeContract}$       & $S0/S0D$         & $\operatorname{after}(d)$, 受取先 $X$               & $p(1-m-b)$ を $\mathsf{addr}_B$、$p\cdot m$ を $\mathsf{addr}_C$、$p\cdot b$ を $X$ へ               & Anyone                                                & S, L    \\
+		$\mathrm{ContractTimeout}$        & $S0/S0D/S0X/S0C$ & $\mathsf{timeout\_condition}(\mathsf{stateTag})$ & $p$ を $\mathsf{addr}_A$ に返金（$S2$）                                                              & Anyone                                                & S, L    \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -125,7 +150,7 @@ LogicIndex は以下の番号に対応し、1 から順に付与する。
 本節では、Contract が FinalizeContract により確定した際に生成される Transaction の出力仕様としての $\mathsf{TransSpec}$ を説明する。
 $\mathsf{TransSpec}$ は State に対応し、$\mathsf{LockParams}$ と $\mathsf{InitParams}$ に基づいて UTXO を出力する Transaction の仕様を与える。
 各状態に対して、$\mathsf{LockParams}$ と $\mathsf{InitParams}$ にどのような操作を行い Transaction を生成するかを記述する。
-Finalization は期限条件により確定させる遷移であり、$\mathrm{FinalizeContract}$ と $\mathrm{ContractTimeout}$ を含む。いずれも誰でも起動可能で、$\operatorname{after}(d)$ により $S0D \to S1$ を確定し、$\operatorname{after}(t)$ により $S0/S0D/S0X/S0C \to S2$ を確定する。
+Finalization は期限条件により確定させる遷移であり、$\mathrm{FinalizeContract}$ と $\mathrm{ContractTimeout}$ を含む。いずれも誰でも起動可能で、$\operatorname{after}(d)$ により $S0/S0D \to S1$ を確定し、$\mathsf{timeout\_condition}(\mathsf{stateTag})=\mathsf{true}$ のとき $S0/S0D/S0X/S0C \to S2$ を確定する。
 
 \subsection{Property}
 Safety：運営の持ち逃げ抑止
@@ -133,7 +158,7 @@ $\mathsf{addr}_C$は単独で$S1/S2$を実行できず、資金移動には $(\m
 ⇒ $\mathsf{addr}_C$単独のmisappropriation（$F$）を制度的に排除。
 
 Liveness：決着性
-$S0D$は$\mathrm{BuyerConfirm}$か$\operatorname{after}(d)$の$\mathrm{FinalizeContract}$で$S1$へ、
-$S0X$は仲裁（$\mathsf{addr}_C + (\mathsf{addr}_A \text{ or } \mathsf{addr}_B)$）か、最終的に$\operatorname{after}(t)$の$\mathrm{ContractTimeout}$で$S2$へ。
+$S0/S0D$は$\mathrm{BuyerConfirm}$か$\operatorname{after}(d)$の$\mathrm{FinalizeContract}$で$S1$へ、
+$S0X$は仲裁（$\mathsf{addr}_C + (\mathsf{addr}_A \text{ or } \mathsf{addr}_B)$）か、最終的に$\mathsf{timeout\_condition}(\mathsf{stateTag})=\mathsf{true}$の$\mathrm{ContractTimeout}$で$S2$へ。
 また、$\mathrm{FinalizeContract}$ は誰でも実行可能で bounty があるため、期限到来後に実行されやすい。
 ⇒ 資金が永久拘束されない。

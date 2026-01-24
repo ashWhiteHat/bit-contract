@@ -92,6 +92,8 @@ $tx$ が $\mathsf{BaseValid}(\Sigma, tx)=\mathsf{true}$ を満たし、かつ ad
 	      各 $\mathsf{func}_\ell$ は $(\mathsf{args}_\ell, \mathsf{modifier}_\ell, \mathsf{post\_state}_\ell, \mathsf{validation}_\ell)$ から成り、$\mathsf{modifier}_\ell$ は現状態で当該関数を実行可能かを判定し、$\mathsf{validation}_\ell$ は $\mathsf{post\_state}_\ell$ と $\mathsf{args}_\ell$ を検証して遷移の妥当性を確認する。
 	\item $\mathsf{TransSpec}$：状態と生成するトランザクションの形の二つから成る出力仕様
 \end{itemize}
+本稿ではテンプレート $\tau$ を記述する DSL として Computational Law DSL である Stipula を採用する。Stipula は自然言語的な契約条項を $\mathsf{Pred}$ および各遷移に対応する $\mathsf{TransSpec}$ として形式化し、検証者が $tx$ を見て一意に判定できる決定的条件（R2）として与える。
+また、テンプレート制約による監査上限（R3）を、実装規律ではなく仕様記述の表現力として固定できる点が Stipula 採用の理由である。UTXO は実行モデル、Stipula はテンプレート仕様の記述層として位置づけられ、$\mathsf{stateTag}$ と不変レジストリ $\Gamma$ 以外の共有状態を増やさない。
 テンプレートは \textbf{普遍（protocol-level constant）} であり、台帳状態の更新で変化しない（R3, R4）。
 テンプレートは、ブロックチェーンネットワークの初期化時から不変である。
 
