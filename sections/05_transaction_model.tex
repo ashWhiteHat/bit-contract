@@ -1,19 +1,19 @@
-o
 \section{Transaction Model}
 本章では、UTXOを用いたスマートコントラクトの実現に関するトランザクションを論じる。
 4章で与えたテンプレート／インスタンス／Locked UTXO および admissibility の定義を前提に、トランザクションの型（classes）として作成・実行・確定の流れを整理する。
-本章で扱うトランザクションは、CreateContract、LockUtxo、ExecuteContract（$tx_\ell$）、FinalizeContract（$tx_{\ell_{\mathrm{final}}}$）の4種類である。
+本章で扱うトランザクションは、CreateContract、LockUtxo、ExecuteContract、FinalizeContractの4種類である。
 トランザクションの一般形は第4章（Formalization）の Definition 3 に従う。以降は各“型”ごとに、Definition 3 の $\mathsf{out}/\mathsf{aux}$ に課す追加制約（marker、含めるパラメータ、$\mathsf{c}_{id}$ 導出など）のみを列挙する。
-本章の各遷移 $\ell$ は、stateTag付きの Locked UTXO を入力に取り、$\mathsf{TransSpec}$ が指定する (i) 次の Locked UTXO への更新 または (ii) 解放（S1/S2）の出力 を生成する“トランザクション型”である。
+本章の各遷移 $\ell$ は、$\mathsf{stateTag}$ 付きの Locked UTXO を入力に取り、$\mathsf{TransSpec}$ が指定する (i) 次の Locked UTXO への更新 または (ii) 解放（$S1/S2$）の出力 を生成する“トランザクション型”である。
 以降の具体化では、Escrow のテンプレート index を $\mathsf{t}_{index}=1$ と固定する。以下の表記は本章のトランザクションモデルに従う。
 \begin{enumerate}
-	\item オペレーターが自らのアドレス $\Oper$ とパーセンテージのマージン率 $m$ を含めた CreateContract Transaction を送信する。
-	\item バイヤーが購入する商品の価格 $p$ と販売者のアドレス $\Seller$ を含めた LockUtxo Transaction を送信する。
-	\item 2 で参照した $\mathsf{c}_{id}$ に対して ExecuteContract Transaction（$tx_\ell$）を送信し、処理を行う。
+	\item オペレーターアドレス $\mathsf{addr}_C$ が、マージン率 $m$ を含めた CreateContract トランザクションを送信する。
+	\item 買い手アドレス $\mathsf{addr}_A$ が、価格 $p$ と販売者アドレス $\mathsf{addr}_B$ を含めた LockUtxo トランザクションを送信する。
+	\item 2 で参照した $\mathsf{c}_{id}$ に対して ExecuteContract トランザクション（$tx_\ell$）を送信し、処理を行う。
 \end{enumerate}
 
 \subsection{Creation}
-Definition 9 の CreateContract に対応する。CreateContract は $\mathsf{out}$ に $\mathsf{to}=0x0$ の出力（marker/burn）を含み、$\mathsf{aux}$ に $\mathsf{t}_{index}$ と $\mathsf{InitParams}$ を含む。さらに
+Definition 9 の CreateContract に対応する。
+CreateContract は $\mathsf{out}$ に $\mathsf{to}=0x0$ の出力（marker/burn）を含み、$\mathsf{aux}$ に $\mathsf{t}_{index}$ と $\mathsf{InitParams}$ を含む。さらに
 \begin{equation}
 	\mathsf{TypeCheck}(\mathsf{InitParams}, \mathsf{ArgSchema}[\mathsf{t}_{index}])=\mathsf{true}
 \end{equation}

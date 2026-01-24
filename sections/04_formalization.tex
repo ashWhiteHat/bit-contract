@@ -83,13 +83,13 @@ $tx$ が $\mathsf{BaseValid}(\Sigma, tx)=\mathsf{true}$ を満たし、かつ ad
 \begin{itemize}
 	\item $\mathsf{t}_{index}$：テンプレート index は固定
 	\item $\mathsf{InitParams}$：初期化引数スロット（型・制約）。
-	CreateContract の Constructor 引数により初期化され、以後は定数として更新されない。
+	      CreateContract の Constructor 引数により初期化され、以後は定数として更新されない。
 	\item $\mathsf{LockParams}$：ロック引数スロット（型・制約）。
-	LockUtxo 時に与えられる引数を $\mathsf{InitParams}$ 同様に検証するために用いられる。
+	      LockUtxo 時に与えられる引数を $\mathsf{InitParams}$ 同様に検証するために用いられる。
 	\item $\mathsf{StateSet}$：テンプレートが取りうる有限の状態ラベル集合。
-	$s_{\mathrm{init}} \in \mathsf{StateSet}$ を初期状態とする。
+	      $s_{\mathrm{init}} \in \mathsf{StateSet}$ を初期状態とする。
 	\item $\mathsf{LogicSet}$：検証ロジック（validator）の集合。Key を LogicIndex $\ell$ とし、value は $\mathsf{func}_\ell$ を与える写像であり、$\mathsf{LogicSet}[\ell] = \mathsf{func}_\ell$ と書く。
-	各 $\mathsf{func}_\ell$ は $(\mathsf{args}_\ell, \mathsf{modifier}_\ell, \mathsf{post\_state}_\ell, \mathsf{validation}_\ell)$ から成り、$\mathsf{modifier}_\ell$ は現状態で当該関数を実行可能かを判定し、$\mathsf{validation}_\ell$ は $\mathsf{post\_state}_\ell$ と $\mathsf{args}_\ell$ を検証して遷移の妥当性を確認する。
+	      各 $\mathsf{func}_\ell$ は $(\mathsf{args}_\ell, \mathsf{modifier}_\ell, \mathsf{post\_state}_\ell, \mathsf{validation}_\ell)$ から成り、$\mathsf{modifier}_\ell$ は現状態で当該関数を実行可能かを判定し、$\mathsf{validation}_\ell$ は $\mathsf{post\_state}_\ell$ と $\mathsf{args}_\ell$ を検証して遷移の妥当性を確認する。
 	\item $\mathsf{TransSpec}$：状態と生成するトランザクションの形の二つから成る出力仕様
 \end{itemize}
 テンプレートは \textbf{普遍（protocol-level constant）} であり、台帳状態の更新で変化しない（R3, R4）。
