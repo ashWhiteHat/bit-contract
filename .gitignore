@@ -9,5 +9,5 @@ main.fls
 *.log
 *.out
 *.spl
-*.synctex.gz
+*.synctex*
 ~*

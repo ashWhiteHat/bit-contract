@@ -22,11 +22,13 @@
 \end{table}
 
 \subsection{Template State Transition}
-$\Szero$: Funded escrow（資金拘束）：Buyerが資金をエスクローとして拘束
-$\SzD$: Delivered pending（配送通知済み・検収猶予中）：Sellerが発送の完了を通知
-$\SzX$: Disputed（紛争中：タイムアウトor仲裁のみ）：Buyerが発送の完了を認めず紛争
-$\Sone$: Release to Seller（支払）：資金がSellerへ解放
-$\Stwo$: Refund to Buyer（返金）：資金がBuyerへ返還
+\begin{itemize}
+	\item $\Szero$: Funded escrow（資金拘束）：Buyerが資金をエスクローとして拘束
+	\item $\SzD$: Delivered pending（配送通知済み・検収猶予中）：Sellerが発送の完了を通知
+	\item $\SzX$: Disputed（紛争中：タイムアウトor仲裁のみ）：Buyerが発送の完了を認めず紛争
+	\item $\Sone$: Release to Seller（支払）：資金がSellerへ解放
+	\item $\Stwo$: Refund to Buyer（返金）：資金がBuyerへ返還
+\end{itemize}
 
 遷移の全体像は次のように要約できる。
 \begin{itemize}
@@ -45,52 +47,45 @@ $\Stwo$: Refund to Buyer（返金）：資金がBuyerへ返還
 \end{transitions}
 
 \subsection{Template InitParams}
-$\mathsf{InitParams}=(m, d, t, b)$
-マージン率: $m$
-配送期間：$d$
-コントラクトタイムアウト: $t$
-Finalize報酬率: $b$
+\begin{itemize}
+	\item $\mathsf{InitParams}=(m, d, t, b)$
+	\item マージン率: $m$
+	\item 配送期間：$d$
+	\item コントラクトタイムアウト: $t$
+	\item Finalize報酬率: $b$
+\end{itemize}
 $b$ はテンプレート固定（CreateSC で確定）であり、$0 \le b \le 1-m$ を仮定する。
 
 \subsection{Transition Labels}
 Operatorが $\mathsf{InitParams}$ の設定と CreateSC の送信を行い、$\mathsf{deployerAddr}$ として $\cid$ が導出される
-$d$：SellerConfirm後の“検収猶予”
-$t$：全体の最終期限（$t \ge d$ を仮定）
 
-$\BuyerLock(\sigA, \Seller, p)$
-Buyerが資産をLockし、$\Szero$が開始
+\begin{itemize}
+	\item $d$：SellerConfirm後の“検収猶予”
+	\item $t$：全体の最終期限（$t \ge d$ を仮定）
+\end{itemize}
 
-$\SellerDeliver(\sigB)$
-$\Szero$からSellerの署名で $\stag=\SzD$ に移行し、検収猶予 $d$ のカウントを開始する
-
-$\BuyerConfirm(\sigA)$
-Buyerの署名で$\SzD \to \Sone$
-
-$\BuyerDispute(\sigA)$
-$\before(d)$ のみ有効
-Buyerの署名で異議申し立てで$\SzD \to \SzX$
-
-$\BuyerCancel(\sigA)$
-$\Szero$または$\SzD$からのみ
-Buyerの署名でSellerのキャンセル待ち
-
-$\SellerAcceptCancel(\sigB)$
-$\Szero$または$\SzD$からBuyerCancel後、Sellerの署名で$\Stwo$に移行
-
-$\OpRel(\sigC + (\sigA \text{ or } \sigB))$
-Operator仲裁で$\Sone$の状態に移行
-
-$\OpRef(\sigC + (\sigA \text{ or } \sigB))$
-Operator仲裁で$\Stwo$の状態に移行
-
-$\Finalize()$
-誰でも起動可能
-実行者は受取先アドレス $X$ を出力に含めて bounty を受け取る（$\mathsf{Pred}$ は $\mathsf{out}(tx)$ の $X$ を参照、署名不要）。
-$\SellerDeliver$ の後、$d$時間が経過し、$\stag=\SzD$ のままなら$\SzD \to \Sone$
-
-$\Timeout()$
-誰でも起動可能
-$t$の経過で$\Timeout$ 遷移が起動し、Buyerに資金移動し、$\Stwo$
+\begin{itemize}
+	\item $\BuyerLock(\sigA, \Seller, p)$.
+	Buyerが資産をLockし、$\Szero$が開始
+	\item $\SellerDeliver(\sigB)$.
+	$\Szero$からSellerの署名で $\stag=\SzD$ に移行し、検収猶予 $d$ のカウントを開始する
+	\item $\BuyerConfirm(\sigA)$.
+	Buyerの署名で$\SzD \to \Sone$
+	\item $\BuyerDispute(\sigA)$.
+	$\before(d)$ のみ有効。Buyerの署名で異議申し立てで$\SzD \to \SzX$
+	\item $\BuyerCancel(\sigA)$.
+	$\Szero$または$\SzD$からのみ。Buyerの署名でSellerのキャンセル待ち
+	\item $\SellerAcceptCancel(\sigB)$.
+	$\Szero$または$\SzD$からBuyerCancel後、Sellerの署名で$\Stwo$に移行
+	\item $\OpRel(\sigC + (\sigA \text{ or } \sigB))$.
+	Operator仲裁で$\Sone$の状態に移行
+	\item $\OpRef(\sigC + (\sigA \text{ or } \sigB))$.
+	Operator仲裁で$\Stwo$の状態に移行
+	\item $\Finalize()$.
+	誰でも起動可能。実行者は受取先アドレス $X$ を出力に含めて bounty を受け取る（$\mathsf{Pred}$ は $\mathsf{out}(tx)$ の $X$ を参照、署名不要）。$\SellerDeliver$ の後、$d$時間が経過し、$\stag=\SzD$ のままなら$\SzD \to \Sone$
+	\item $\Timeout()$.
+	誰でも起動可能。$t$の経過で$\Timeout$ 遷移が起動し、Buyerに資金移動し、$\Stwo$
+\end{itemize}
 
 遷移ラベルごとの $\mathsf{Pred}_{\tau,\ell}$ と $\mathsf{TransSpec}_{\tau,\ell}$ を表に整理する。表中の不変条件は S=Safety, A=Authority Safety, L=Liveness を表す。取消フラグは Locked UTXO に付随する補助情報として扱い、$(\cid, \stag)$ と同様に script / aux / commitment / metadata に埋め込まれ得る。
 \begin{table}[htbp]
