@@ -9,26 +9,26 @@
 \label{subsec:escrow-notation}
 
 \begin{table}[t]
-  \centering
-  \small
-  \setlength{\tabcolsep}{6pt}
-  \renewcommand{\arraystretch}{1.15}
-  \begin{tabularx}{0.92\linewidth}{lX}
-    \toprule
-    記号 & 意味 \\
-    \midrule
-    addrA & 買い手（Buyer）アドレス \\
-    addrB & 販売者（Seller）アドレス \\
-    addrC & 運営者（Operator / Platform）アドレス \\
-    $p$   & 商品価格 \\
-    $m$   & マージン率 \\
-    $d$   & 配送期間（Delivered 判定の想定期間） \\
-    $t$   & コントラクト・タイムアウト（$t \ge d$） \\
-    $b$   & FinalizeContract 報酬率（bounty rate, $0 \le b \le 1-m$） \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Escrow ケーススタディで用いる記号}
-  \label{tab:escrow-notation}
+	\centering
+	\small
+	\setlength{\tabcolsep}{6pt}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{0.92\linewidth}{lX}
+		\toprule
+		記号    & 意味                                                   \\
+		\midrule
+		addrA & 買い手（Buyer）アドレス                                       \\
+		addrB & 販売者（Seller）アドレス                                      \\
+		addrC & 運営者（Operator / Platform）アドレス                         \\
+		$p$   & 商品価格                                                 \\
+		$m$   & マージン率                                                \\
+		$d$   & 配送期間（Delivered 判定の想定期間）                              \\
+		$t$   & コントラクト・タイムアウト（$t \ge d$）                             \\
+		$b$   & FinalizeContract 報酬率（bounty rate, $0 \le b \le 1-m$） \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Escrow ケーススタディで用いる記号}
+	\label{tab:escrow-notation}
 \end{table}
 
 \subsection{Instance Parameters (InitParams / LockParams)}
@@ -40,7 +40,7 @@ InitParams $=(m,d,t,b)$ は運営者 addrC が CreateContract（インスタン�
 ここでは $0 \le b \le 1-m$ を仮定する。
 また、addrdeployer $=$ addrC として cid を導出し、例えば
 \[
-  \mathrm{cid} := H(\mathrm{addrdeployer} \parallel \mathrm{tindex} \parallel \mathrm{InitParams})
+	\mathrm{cid} := H(\mathrm{addrdeployer} \parallel \mathrm{tindex} \parallel \mathrm{InitParams})
 \]
 のように決定的に定める（同一入力から一意であることが本質）。
 
@@ -55,87 +55,87 @@ LockParams $=(\mathrm{addrB},p)$ は買い手 addrA が BuyerLock により資�
 stateTag は Locked UTXO に付随する唯一の共有状態語彙として扱う。
 
 \begin{table*}[t]
-  \centering
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \renewcommand{\arraystretch}{1.15}
-  \begin{tabularx}{\textwidth}{l l l l l X}
-    \toprule
-    遷移ラベル $\ell$ & 前状態 & 起動者 & 認証/条件 & 次状態 & 効果（主な出力・更新） \\
-    \midrule
-    BuyerLock &
-      -- &
-      addrA &
-      $\sigma_A$ &
-      $S0$ &
-      $p$ を拘束し $\mathrm{UTXO}^{\star}(\mathrm{cid},\mathrm{stateTag}{=}S0)$ を生成 \\
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{l l l l l X}
+		\toprule
+		遷移ラベル $\ell$                                                   & 前状態 & 起動者 & 認証/条件 & 次状態 & 効果（主な出力・更新）                   \\
+		\midrule
+		BuyerLock                                                      &
+		--                                                             &
+		addrA                                                          &
+		$\sigma_A$                                                     &
+		$S0$                                                           &
+		$p$ を拘束し $\mathrm{UTXO}^{\star}(\mathrm{cid},\mathrm{stateTag}{=}S0)$ を生成                                                \\
 
-    SellerDeliver &
-      $S0$ &
-      addrB &
-      $\sigma_B$ &
-      $S0D$ &
-      $\mathrm{stateTag}{=}S0D$ に更新（ロック継続） \\
+		SellerDeliver                                                  &
+		$S0$                                                           &
+		addrB                                                          &
+		$\sigma_B$                                                     &
+		$S0D$                                                          &
+		$\mathrm{stateTag}{=}S0D$ に更新（ロック継続）                                                                                     \\
 
-    BuyerConfirm &
-      $S0/S0D$ &
-      addrA &
-      $\sigma_A$ &
-      $S1$ &
-      $p(1-m-b)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC},\; pb\rightarrow \mathrm{addrA}$（bounty は Buyer に帰属） \\
+		BuyerConfirm                                                   &
+		$S0/S0D$                                                       &
+		addrA                                                          &
+		$\sigma_A$                                                     &
+		$S1$                                                           &
+		$p(1-m-b)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC},\; pb\rightarrow \mathrm{addrA}$（bounty は Buyer に帰属） \\
 
-    FinalizeContract &
-      $S0/S0D$ &
-      Anyone &
-      $\operatorname{after}(d)$ &
-      $S1$ &
-      $p(1-m-b)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC},\; pb\rightarrow \mathrm{addrF}$（bounty は起動者に帰属） \\
+		FinalizeContract                                               &
+		$S0/S0D$                                                       &
+		Anyone                                                         &
+		$\operatorname{after}(d)$                                      &
+		$S1$                                                           &
+		$p(1-m-b)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC},\; pb\rightarrow \mathrm{addrF}$（bounty は起動者に帰属）     \\
 
-    BuyerDispute &
-      $S0D$ &
-      addrA &
-      $\sigma_A$ &
-      $S0X$ &
-      $\mathrm{stateTag}{=}S0X$ に更新（ロック継続） \\
+		BuyerDispute                                                   &
+		$S0D$                                                          &
+		addrA                                                          &
+		$\sigma_A$                                                     &
+		$S0X$                                                          &
+		$\mathrm{stateTag}{=}S0X$ に更新（ロック継続）                                                                                     \\
 
-    OperatorMediateRelease &
-      $S0X$ &
-      $\mathrm{addrC}+(\mathrm{addrA}/\mathrm{addrB})$ &
-      $\sigma_C$ と $(\sigma_A\ \mathrm{or}\ \sigma_B)$ &
-      $S1$ &
-      $p(1-m)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC}$ \\
+		OperatorMediateRelease                                         &
+		$S0X$                                                          &
+		$\mathrm{addrC}+(\mathrm{addrA}/\mathrm{addrB})$               &
+		$\sigma_C$ と $(\sigma_A\ \mathrm{or}\ \sigma_B)$               &
+		$S1$                                                           &
+		$p(1-m)\rightarrow \mathrm{addrB},\; pm\rightarrow \mathrm{addrC}$                                                       \\
 
-    OperatorMediateRefund &
-      $S0X$ &
-      $\mathrm{addrC}+(\mathrm{addrA}/\mathrm{addrB})$ &
-      $\sigma_C$ と $(\sigma_A\ \mathrm{or}\ \sigma_B)$ &
-      $S2$ &
-      $p\rightarrow \mathrm{addrA}$ \\
+		OperatorMediateRefund                                          &
+		$S0X$                                                          &
+		$\mathrm{addrC}+(\mathrm{addrA}/\mathrm{addrB})$               &
+		$\sigma_C$ と $(\sigma_A\ \mathrm{or}\ \sigma_B)$               &
+		$S2$                                                           &
+		$p\rightarrow \mathrm{addrA}$                                                                                            \\
 
-    BuyerCancel &
-      $S0/S0D$ &
-      addrA &
-      $\sigma_A$ &
-      $S0C$ &
-      $\mathrm{stateTag}{=}S0C$ に更新（ロック継続） \\
+		BuyerCancel                                                    &
+		$S0/S0D$                                                       &
+		addrA                                                          &
+		$\sigma_A$                                                     &
+		$S0C$                                                          &
+		$\mathrm{stateTag}{=}S0C$ に更新（ロック継続）                                                                                     \\
 
-    SellerAcceptCancel &
-      $S0C$ &
-      addrB &
-      $\sigma_B$ &
-      $S2$ &
-      $p\rightarrow \mathrm{addrA}$ \\
+		SellerAcceptCancel                                             &
+		$S0C$                                                          &
+		addrB                                                          &
+		$\sigma_B$                                                     &
+		$S2$                                                           &
+		$p\rightarrow \mathrm{addrA}$                                                                                            \\
 
-    ContractTimeout &
-      $S0/S0D/S0X/S0C$ &
-      Anyone &
-      $\mathrm{timeout\_condition}(\mathrm{stateTag})=\mathrm{true}$ &
-      $S2$ &
-      $p\rightarrow \mathrm{addrA}$ \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Escrow テンプレートの遷移仕様（検証条件・次状態・支払い）}
-  \label{tab:escrow-transitions}
+		ContractTimeout                                                &
+		$S0/S0D/S0X/S0C$                                               &
+		Anyone                                                         &
+		$\mathrm{timeout\_condition}(\mathrm{stateTag})=\mathrm{true}$ &
+		$S2$                                                           &
+		$p\rightarrow \mathrm{addrA}$                                                                                            \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Escrow テンプレートの遷移仕様（検証条件・次状態・支払い）}
+	\label{tab:escrow-transitions}
 \end{table*}
 
 \subsection{LogicSet, Pred, and TransSpec}
@@ -145,7 +145,7 @@ stateTag は Locked UTXO に付随する唯一の共有状態語彙として扱�
 本節では重複を避けるため、LogicSet の具体は表\ref{tab:escrow-transitions} で一括して与える。
 すなわち、各遷移 $\ell$ について
 \[
-\mathrm{LogicSet}[\ell]=\mathrm{func}_{\ell}=(\mathrm{args}_{\ell},\mathrm{modifier}_{\ell},\mathrm{post\_state}_{\ell},\mathrm{validation}_{\ell})
+	\mathrm{LogicSet}[\ell]=\mathrm{func}_{\ell}=(\mathrm{args}_{\ell},\mathrm{modifier}_{\ell},\mathrm{post\_state}_{\ell},\mathrm{validation}_{\ell})
 \]
 を、(i) 「前状態」$\Rightarrow \mathrm{modifier}_{\ell}$、(ii) 「認証/条件」$\Rightarrow \mathrm{validation}_{\ell}$、
 (iii) 「次状態」$\Rightarrow \mathrm{post\_state}_{\ell}$、(iv) 「効果」$\Rightarrow \mathrm{TransSpec}_{\tau,\ell}$ として読み替える。
