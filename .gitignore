@@ -6,6 +6,7 @@ main.fls
 *.aux
 *.bbl
 *.blg
+*.fls
 *.log
 *.out
 *.spl

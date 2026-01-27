@@ -31,8 +31,7 @@ Outpoint を $\mathsf{op}=(\mathsf{tx}_{id}, i)$ とし、UTXO を $u$ で次の
 \textbf{実装上は、$(\mathsf{c}_{id}, \mathsf{stateTag})$ は $tx$ の $\mathsf{aux}$ に埋め込まれ得る抽象化であり、$u$ に独立のフィールドがあることを仮定しない。
 }
 （Bitcoin Script 相当では $(\mathsf{c}_{id}, \mathsf{stateTag})$ を script/commitment/metadata として埋め込める。
-eUTXO では datum として扱える。
-）
+eUTXO では datum として扱える。）
 
 \paragraph{Definition 2：台帳状態}
 $\Sigma$ を
@@ -53,18 +52,12 @@ Bitcoinと同様に、本稿の $tx$ は from/to アドレスを明示的なフ�
 本稿で $\mathsf{pk}_{\mathrm{from}}$ と記す場合は、入力 $u$ の所有者（消費権限の主体）を指す略記であり、明示フィールドではなく入力の検証から同定される。
 
 \paragraph{Contract Transaction 共通ヘッダ（aux）}
-本稿で扱う Contract Transaction の $\mathsf{aux}$ は canonical encoding された byte 列とし、少なくとも
-\texttt{proto\_version}、
-\texttt{tx\_type} $\in \{\mathrm{CREATE},\mathrm{LOCK},\mathrm{EXECUTE},\mathrm{FINALIZE}\}$（FINALIZE は任意）、
-\texttt{cid}、
-\texttt{schema\_id} または \texttt{t\_index}、
-\texttt{payload\_bytes}
-を含む。
+本稿で扱う Contract Transaction の $\mathsf{aux}$ は canonical encoding された byte 列とし、少なくとも\texttt{proto\_version}、\texttt{tx\_type} $\in \{\mathrm{CREATE},\mathrm{LOCK},\mathrm{EXECUTE},\mathrm{FINALIZE}\}$、\texttt{cid}、\texttt{payload\_bytes}を含む。
 ここで \texttt{payload\_bytes} は型固有データである。
 合意・検証・$\mathsf{c}_{id}$ 導出に用いるのは必ずシリアライズ済み byte[]（例：\texttt{init\_params\_bytes}）であり、JSON などの文字列表現は表示・ログ用途の非合意データに限る。
 \texttt{tx\_type} を合意対象として固定するのは、型の曖昧解釈を排除し、安価な分類で DoS 耐性を高め、\texttt{proto\_version}/\texttt{payload\_bytes} により将来拡張を可能にするためである。
 $\mathsf{aux}$ は合意対象データ（consensus-critical bytes）であり、Contract Transaction の wire-level encoding は TLV（Type-Length-Value）として規範化する。
-すなわち、$\mathsf{aux}$ 内の \texttt{proto\_version}/\texttt{tx\_type}/\texttt{payload\_bytes}（必要に応じて \texttt{cid}/\texttt{schema\_id} or \texttt{t\_index}）は canonical TLV bytes として一意に解釈される。
+すなわち、$\mathsf{aux}$ 内の \texttt{proto\_version}/\texttt{tx\_type}/\texttt{payload\_bytes}は canonical TLV bytes として一意に解釈される。
 Ethereum の Typed Transaction Envelope と同様に型情報を明示しつつ（括弧内での言及に留める）、Bitcoin の raw $tx$ が byte 列として合意対象であることと同じく、合意に用いる入力は canonical TLV bytes に固定される。
 規範仕様は次のとおりである。
 \begin{itemize}
@@ -76,7 +69,7 @@ Ethereum の Typed Transaction Envelope と同様に型情報を明示しつつ�
 	\item 未知 Type：$u^\star$ を入力に含む $tx$ では unknown type を invalid とし、それ以外は将来拡張のために skip 可とする
 \end{itemize}
 固定長整数の値表現は big-endian とする。
-cid/署名/検証の合意対象は canonical TLV bytes であり、例として \texttt{init\_params\_bytes} は canonical TLV bytes として扱う。
+$c_{id}$/署名/検証の合意対象は canonical TLV bytes であり、例として \texttt{init\_params\_bytes} は canonical TLV bytes として扱う。
 TLV の type 割当はプロトコル定数であり、Appendix に test vectors を示す。
 
 \paragraph{Definition 4：基礎検証：UTXO 妥当性}

@@ -45,9 +45,9 @@ $b$ は契約ごとに Create 時点でコミットする。
 プロトコルは $b_{\min} \le b \le b_{\max}$ の範囲や $b=\min(b_{\mathrm{cap}},\lfloor \alpha \cdot p \rfloor)$ のような比率＋上限を課すことで、恣意・DoSを抑制できる。
 ここで $b_{\min}, b_{\max}, b_{\mathrm{cap}}, \alpha$ はプロトコル定数（合意規則）として固定される。
 Finalize $tx$ の手数料は別途確保され、$b$ は追加の誘因として扱う。
-また、$\mathsf{pk}_{\mathrm{from}} = \mathsf{pk}_C$ とし、CreateContract の $\mathsf{tx}_{id}$ により cid を導出し、例えば
+また、$\mathsf{pk}_{\mathrm{from}} = \mathsf{pk}_C$ とし、CreateContract の $\mathsf{tx}_{id}$ により $c_{id}$ を導出し、例えば
 \[
-	\mathrm{cid} := H(\mathsf{tx}_{id} \parallel \mathsf{pk}_{\mathrm{from}} \parallel \mathsf{t}_{index} \parallel \mathrm{init\_params\_bytes})
+	c_{id} := H(\mathsf{tx}_{id} \parallel \mathsf{pk}_{\mathrm{from}} \parallel \mathsf{t}_{index} \parallel \mathrm{init\_params\_bytes})
 \]
 のように決定的に定める（同一入力から一意であることが本質）。
 
@@ -77,7 +77,7 @@ stateTag は $u^\star$ に付随する唯一の共有状態語彙として扱う
 		$\mathsf{pk}_A$                                                &
 		$\sigma_A$                                                     &
 		$S0$                                                           &
-		$p$ を拘束し $u^\star(\mathrm{cid},\mathrm{stateTag}{=}S0)$ を生成                                                            \\
+		$p$ を拘束し $u^\star(c_{id},\mathrm{stateTag}{=}S0)$ を生成                                                                      \\
 
 		SellerDeliver                                                  &
 		$S0$                                                           &
